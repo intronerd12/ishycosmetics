@@ -1,0 +1,232 @@
+# IshyCosmetics Project Structure & Setup Guide
+
+## 📁 Complete Folder Structure
+
+```
+ishycosmetics/
+├── backend/
+│   ├── config/
+│   │   ├── database.js
+│   │   └── config.js
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── productController.js
+│   │   ├── orderController.js
+│   │   └── userController.js
+│   ├── middleware/
+│   │   ├── auth.js
+│   │   └── validation.js
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Product.js
+│   │   ├── Order.js
+│   │   └── Category.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── products.js
+│   │   ├── orders.js
+│   │   └── users.js
+│   ├── uploads/
+│   │   └── products/
+│   ├── utils/
+│   │   └── helpers.js
+│   ├── .env
+│   ├── .gitignore
+│   ├── package.json
+│   └── server.js
+├── frontend/
+│   ├── css/
+│   │   ├── style.css
+│   │   ├── bootstrap.min.css
+│   │   └── admin.css
+│   ├── js/
+│   │   ├── main.js
+│   │   ├── jquery.min.js
+│   │   ├── bootstrap.min.js
+│   │   ├── cart.js
+│   │   └── admin.js
+│   ├── images/
+│   │   ├── products/
+│   │   ├── banners/
+│   │   └── logo/
+│   ├── pages/
+│   │   ├── admin/
+│   │   │   ├── dashboard.html
+│   │   │   ├── products.html
+│   │   │   ├── orders.html
+│   │   │   └── users.html
+│   │   ├── shop/
+│   │   │   ├── products.html
+│   │   │   ├── product-detail.html
+│   │   │   ├── cart.html
+│   │   │   └── checkout.html
+│   │   ├── auth/
+│   │   │   ├── login.html
+│   │   │   └── register.html
+│   │   └── user/
+│   │       ├── profile.html
+│   │       └── orders.html
+│   ├── index.html
+│   ├── about.html
+│   └── contact.html
+└── README.md
+```
+
+## 🗄️ Database Design (MySQL)
+
+### Database Name: `ishycosmetics`
+
+### Tables Structure:
+
+#### 1. users
+```sql
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    phone VARCHAR(20),
+    address TEXT,
+    role ENUM('customer', 'admin') DEFAULT 'customer',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+#### 2. categories
+```sql
+CREATE TABLE categories (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    image VARCHAR(255),
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### 3. products
+```sql
+CREATE TABLE products (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    price DECIMAL(10,2) NOT NULL,
+    discount_price DECIMAL(10,2),
+    category_id INT,
+    brand VARCHAR(100),
+    stock_quantity INT DEFAULT 0,
+    sku VARCHAR(100) UNIQUE,
+    images JSON,
+    status ENUM('active', 'inactive', 'out_of_stock') DEFAULT 'active',
+    featured BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+```
+
+#### 4. orders
+```sql
+CREATE TABLE orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    order_number VARCHAR(50) UNIQUE NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL,
+    status ENUM('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
+    payment_status ENUM('pending', 'paid', 'failed', 'refunded') DEFAULT 'pending',
+    payment_method VARCHAR(50),
+    shipping_address TEXT NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+
+#### 5. order_items
+```sql
+CREATE TABLE order_items (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    total DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+```
+
+## 🚀 Getting Started - Step by Step
+
+### Step 1: Initialize Backend
+1. Create the project folder: `mkdir ishycosmetics && cd ishycosmetics`
+2. Create backend folder: `mkdir backend && cd backend`
+3. Initialize npm: `npm init -y`
+4. Install dependencies:
+   ```bash
+   npm install express mysql2 bcryptjs jsonwebtoken cors dotenv multer express-validator
+   npm install -D nodemon
+   ```
+
+### Step 2: Create Database
+1. Open MySQL and create database:
+   ```sql
+   CREATE DATABASE ishycosmetics;
+   USE ishycosmetics;
+   ```
+2. Run the table creation queries above
+
+### Step 3: Setup Environment Variables
+Create `.env` file in backend folder:
+```
+PORT=5000
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=ishycosmetics
+JWT_SECRET=your_jwt_secret_key
+```
+
+### Step 4: Priority Development Order
+
+**Week 1: Backend Foundation**
+1. ✅ Database setup
+2. ✅ Basic server setup (server.js)
+3. ✅ Database connection (config/database.js)
+4. ✅ User authentication system
+5. ✅ Product management APIs
+
+**Week 2: Core Features**
+1. ✅ Order management system
+2. ✅ File upload for product images
+3. ✅ Basic frontend structure
+4. ✅ User registration/login pages
+
+**Week 3: Frontend Integration**
+1. ✅ Homepage with featured products
+2. ✅ Product listing and details
+3. ✅ Shopping cart functionality
+4. ✅ Checkout process
+
+**Week 4: Admin & Polish**
+1. ✅ Admin dashboard
+2. ✅ Order management interface
+3. ✅ User profile management
+4. ✅ Testing and bug fixes
+
+## 📋 First Files to Create
+
+**Start with these files in this exact order:**
+
+1. **backend/package.json** (npm init)
+2. **backend/.env** (environment variables)
+3. **backend/config/database.js** (database connection)
+4. **backend/server.js** (main server file)
+5. **backend/models/User.js** (user model)
+6. **backend/routes/auth.js** (authentication routes)
+
+Would you like me to create the first file (server.js) to get you started?
